@@ -3259,19 +3259,15 @@ extern const struct inode_operations simple_symlink_inode_operations;
 
 extern int iterate_dir(struct file *, struct dir_context *);
 
-extern int vfs_statx(int, const char __user *, int, struct kstat *, u32);
 extern int vfs_statx_fd(unsigned int, struct kstat *, u32, unsigned int);
 
-static inline int vfs_fstatat(int dfd, const char __user *filename,
-			      struct kstat *stat, int flags)
-{
-	return vfs_statx(dfd, filename, flags | AT_NO_AUTOMOUNT,
-			 stat, STATX_BASIC_STATS);
-}
 static inline int vfs_fstat(int fd, struct kstat *stat)
 {
 	return vfs_statx_fd(fd, stat, STATX_BASIC_STATS, 0);
 }
+
+int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,
+		int flags);
 
 static inline int vfs_stat(const char __user *filename, struct kstat *stat)
 {
