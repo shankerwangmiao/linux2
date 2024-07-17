@@ -10,6 +10,8 @@
 #include "efistub.h"
 #include "loongarch-stub.h"
 
+#include <uartout.h>
+
 typedef void __noreturn (*kernel_entry_t)(bool efi, unsigned long cmdline,
 					  unsigned long systab);
 
@@ -44,6 +46,10 @@ static void detect_oldworld(void)
 {
 	is_oldworld = !!(csr_read64(LOONGARCH_CSR_DMWIN1) & CSR_DMW1_PLV0);
 	efi_debug("is_oldworld: %d\n", is_oldworld);
+	efi_debug("dmwin0: %lx\n", csr_read64(LOONGARCH_CSR_DMWIN0));
+	efi_debug("dmwin1: %lx\n", csr_read64(LOONGARCH_CSR_DMWIN1));
+	efi_debug("dmwin2: %lx\n", csr_read64(LOONGARCH_CSR_DMWIN2));
+	efi_debug("dmwin3: %lx\n", csr_read64(LOONGARCH_CSR_DMWIN3));
 	if(is_oldworld) {
 		efi_info("Booting on OldWorld firmware\n");
 	}
@@ -72,6 +78,10 @@ efi_status_t efi_boot_kernel(void *handle, efi_loaded_image_t *image,
 		return status;
 	}
 
+	efi_debug("kernel_addr=%p\n", (void *)kernel_addr);
+	efi_debug("image=%p\n", image);
+	efi_debug("real_kernel_entry=%p\n", (void *)kernel_entry_address(kernel_addr, image));
+	efi_debug("*(kernel_addr + 8)=%p\n", *(void **)(kernel_addr + 8));
 	efi_info("Exiting boot services\n");
 
 	efi_novamap = false;
