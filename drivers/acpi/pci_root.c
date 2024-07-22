@@ -873,19 +873,30 @@ static void acpi_pci_root_remap_iospace(struct fwnode_handle *fwnode,
 	resource_size_t length = resource_size(res);
 	unsigned long port;
 
-	if (pci_register_io_range(fwnode, cpu_addr, length))
+	pr_info("acpi_pci_root_remap_iospace: start %llx len %llx off %llx\n", cpu_addr, length, entry->offset);
+
+	WARN_ON(1);
+
+	if (pci_register_io_range(fwnode, cpu_addr, length)) {
+		pr_info("acpi_pci_root_remap_iospace: start %llx len %llx, failed to register io range\n", cpu_addr, length);
 		goto err;
+	}
 
 	port = pci_address_to_pio(cpu_addr);
-	if (port == (unsigned long)-1)
+	if (port == (unsigned long)-1) {
+		pr_info("acpi_pci_root_remap_iospace: start %llx len %llx, failed to locate allocated port\n", cpu_addr, length);
 		goto err;
+	}
+	pr_info("acpi_pci_root_remap_iospace: start %llx len %llx, allocated port %lx\n", cpu_addr, length, port);
 
 	res->start = port;
 	res->end = port + length - 1;
 	entry->offset = port - pci_addr;
 
-	if (pci_remap_iospace(res, cpu_addr) < 0)
+	if (pci_remap_iospace(res, cpu_addr) < 0) {
+		pr_info("acpi_pci_root_remap_iospace: cannot remap IO %pa to %pR\n", &cpu_addr, res);
 		goto err;
+	}
 
 	pr_info("Remapped I/O %pa to %pR\n", &cpu_addr, res);
 	return;

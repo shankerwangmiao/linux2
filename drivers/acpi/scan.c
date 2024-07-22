@@ -1915,6 +1915,9 @@ static int acpi_add_single_object(struct acpi_device **child,
 	acpi_handle_debug(handle, "Added as %s, parent %s\n",
 			  dev_name(&device->dev), device->dev.parent ?
 				dev_name(device->dev.parent) : "(null)");
+	acpi_handle_info(handle, "Added as %s, parent %s\n",
+			dev_name(&device->dev), device->dev.parent ?
+			dev_name(device->dev.parent) : "(null)");
 
 	*child = device;
 	return 0;
@@ -2034,6 +2037,8 @@ static u32 acpi_scan_check_dep(acpi_handle handle)
 	u32 count;
 	int i;
 
+	acpi_handle_info(handle, "acpi_scan_check_dep\n");
+
 	/*
 	 * Check for _HID here to avoid deferring the enumeration of:
 	 * 1. PCI devices.
@@ -2041,10 +2046,14 @@ static u32 acpi_scan_check_dep(acpi_handle handle)
 	 * Still, checking for _HID catches more then just these cases ...
 	 */
 	if (!acpi_has_method(handle, "_DEP") || !acpi_has_method(handle, "_HID"))
+	{
+		acpi_handle_info(handle, "acpi_scan_check_dep: no _DEP or _HID\n");
 		return 0;
+	}
 
 	if (!acpi_evaluate_reference(handle, "_DEP", NULL, &dep_devices)) {
 		acpi_handle_debug(handle, "Failed to evaluate _DEP.\n");
+		acpi_handle_info(handle, "Failed to evaluate _DEP.\n");
 		return 0;
 	}
 
@@ -2053,6 +2062,8 @@ static u32 acpi_scan_check_dep(acpi_handle handle)
 		struct acpi_dep_data *dep;
 		bool skip, honor_dep;
 		acpi_status status;
+
+		acpi_handle_info(dep_devices.handles[i], "is a depdency\n");
 
 		status = acpi_get_object_info(dep_devices.handles[i], &info);
 		if (ACPI_FAILURE(status)) {
